@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway');
+
+.addHeight{
+	height: calc(2.25rem + 2px);
+    font-size: 1rem;
+    line-height: 1.5;
+    border: 1px solid #ced4da !important;
+    
+}
+
+.myblack{
+	background-color:#020307;
+	width:100%;
+}
+
+.remove-radius{
+	border-radius: 0rem !important;
+}
+
+a {
+    color: #FFF;
+    font-weight:600;
+    text-decoration: none;
+    background-color: transparent;
+    -webkit-text-decoration-skip: objects;
+}
+
+a:hover {
+    font-weight:600;
+    text-decoration: none;
+    color:#dc3545;
+    background-color: transparent;
+    -webkit-text-decoration-skip: objects;
+    
+}
+
+a:selected{
+	font-weight:600;
+    text-decoration: none;
+    color:#9c1926;
+    background-color: transparent;
+    -webkit-text-decoration-skip: objects;
+}

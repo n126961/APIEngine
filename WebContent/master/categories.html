@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<!--Import Google Icon Font-->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	rel="stylesheet">
+<!--Import materialize.css-->
+<link type="text/css" rel="stylesheet" href="../css/materialize.css"
+	media="screen,projection" />
+	<link type="text/css" rel="stylesheet" href="../css/style.css" media="screen,projection" />
+
+<!--Let browser know website is optimized for mobile-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+	var id = 2;
+	function addRow() {
+		var str = "<div class=\"row\"><div class=\"input-field col s1\"><input id=\"fieldName_"+id+"\" type=\"text\"><label for=\"fieldName_"+id+"\">Field Name</label></div><div class=\"input-field col s2\"><input id=\"fieldLabel_"+id+"\" type=\"text\"><label for=\"fieldLabel_"+id+"\">Field Label</label></div><div class=\"input-field col s1\"><input id=\"inputType_"+id+"\" type=\"text\"><label for=\"inputType_"+id+"\">Type</label></div><div class=\"input-field col s1\"><input id=\"filter_"+id+"\" type=\"text\"><label for=\"filter_"+id+"\">Filter(Y|N)</label></div><div class=\"input-field col s1\"><input id=\"range1_"+id+"\" type=\"text\"><label for=\"range1_"+id+"\">range1</label></div><div class=\"input-field col s1\"><input id=\"range2_"+id+"\" type=\"text\"><label for=\"range2_"+id+"\">range2</label></div><div class=\"input-field col s1\"><input id=\"range3_"+id+"\" type=\"text\"><label for=\"range3_"+id+"\">range3</label></div><div class=\"input-field col s1\"><input id=\"range4_"+id+"\" type=\"text\"><label for=\"range4_"+id+"\">range4</label></div><div class=\"input-field col s1\"><input id=\"indexMe_"+id+"\" type=\"text\"><label for=\"indexMe_"+id+"\">Index(Y|N)</label></div><div class=\"input-field col s1\"><a class=\"btn waves-effect waves-light red lighten-2\" href=\"#\" onclick=\"addRow();\">Add Row</a></div></div><div id=\"replaceMe\"></div>";
+		document.getElementById("replaceMe").outerHTML = str;
+		id = id + 1;
+	}
+
+	function stringifyMap(myMap) {
+	    function selfIterator(map) {
+	        return Array.from(map).reduce((acc, [key, value]) => {
+	            if (value instanceof Map) {
+	                acc[key] = selfIterator(value);
+	            } else {
+	                acc[key] = value;
+	            }
+
+	            return acc;
+	        }, {})
+	    }
+
+	    const res = selfIterator(myMap)
+	    return JSON.stringify(res);
+	}
+	
+	function save() {
+		document.getElementById("progress").className="block highest";
+		document.getElementById("saveLink").className  = "btn disabled";
+		// GET ALL THE INPUT ELEMENTS.
+		var ele = document.getElementsByTagName('input');
+
+		var rows = new Map();
+		// LOOP THROUGH EACH ELEMENT.
+		for (i = 0; i < ele.length; i++) {
+			// CHECK THE ELEMENT TYPE.
+			if (ele[i].type == 'text' ) {
+
+				var idSplits = ele[i].id.split("_");
+				var keyForMap = idSplits[1];
+				if (typeof keyForMap == 'undefined')
+					keyForMap = '0';
+				if (rows.has(keyForMap)) {
+					var rowValue = rows.get(keyForMap);
+					rowValue.set(idSplits[0], ele[i].value);
+				} else {
+					var fields = new Map();
+					fields.set(idSplits[0], ele[i].value);
+					rows.set(keyForMap, fields);
+				}
+
+			}
+			if (ele[i].type == 'checkbox') {
+				rows.get('0').set(ele[i].id, '"'+ele[i].checked+'"');
+				
+			}
+		}
+		//var wrapperObj = {catMap, rows};
+		console.log("BEFOR AJAX: "+rows); 
+		var strPass = stringifyMap(rows);
+		console.log("stringify AJAX: "+strPass);
+		ajaxCall(strPass);
+		
+	}
+	
+	function ajaxCall(strPass){
+		var xmlhttp = new XMLHttpRequest();
+		var url = "http://localhost:8080/APIEngine/categories/save";
+
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var myArr = JSON.parse(this.responseText);
+				postRequest(myArr);
+			}
+		};
+		xmlhttp.open("POST", url, true);
+		xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+		//xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		xmlhttp.setRequestHeader('Content-Type', 'application/json');
+		//xhttp.send("fname=Henry&lname=Ford");
+		console.log("Inside AJAX");
+		console.log(strPass);
+		//console.log(JSON.stringify(rows));
+		xmlhttp.send(strPass);
+	}
+
+	
+
+	function postRequest(arr) {
+		var out = "";
+		var i;
+		
+		if(arr.acknowledged){
+			out = "<div class=\"card-panel teal lighten-2\">"+arr.index+" created successfully</div>";
+			
+		}else{
+			out = "<div class=\"card-panel teal lighten-2\">Something went wrong, please connect with technical team.</div>";
+		}
+		document.getElementById("saveLink").className  = "btn waves-effect waves-light red lighten-2";
+		document.getElementById("progress").className="none";
+		M.toast({html: out})
+		
+	}
+	
+</script>
+</head>
+<body onclick="bodyClick()">
+
+<div class="row">
+<h5>Imp Hints</h5>
+<p>Supported <strong>Types</strong> - (text|keyword|date|long|double|boolean)</p>
+<p><strong>Filter</strong> - Default is N. Types Y/y if filed need to be presented in Fileters/Aggs section</p>
+<p>Index(Y|N, Default:Y) - Keep blank for Default or to create index for the field</p>
+</div>
+	<div class="row">
+		<form name="cats" class="col s12 ">
+			<div class="row">
+				<div class="input-field col s2">
+					<input id="indexName" type="text"> <label for="indexName">ES
+						Name</label>
+				</div>
+				<div class="input-field col s4">
+					<input id="indexLabel" type="text"> <label for="indexLabel">Display
+						Label for Index</label>
+				</div>
+				<div class="input-field col s2">
+					<label><input id="form" type="checkbox" /><span>Create Form</span></label>
+				</div><div class="input-field col s2">
+					<label><input id="filtersAggs" type="checkbox" /><span>Create Filters & Aggs</span></label>
+				</div><div class="input-field col s2">
+					<label><input id="createIndex" type="checkbox" checked="checked"/><span>Create Index</span></label>
+				</div>
+			</div>
+			<div class="row">
+				<!-- <div class="input-field col s1">
+          <input id="rowNo_1" type="text">
+          <label for="rowNo_1">Row</label>
+        </div>
+        <div class="input-field col s1">
+          <input id="colNo_1" type="text">
+          <label for="colNo_1">Col</label>
+        </div> -->
+				<div class="input-field col s1">
+					<input id="fieldName_1" type="text"> <label
+						for="fieldName_1">Field Name</label>
+				</div>
+				<div class="input-field col s2">
+					<input id="fieldLabel_1" type="text"> <label
+						for="fieldLabel_1">Field Label</label>
+				</div>
+				<div class="input-field col s1">
+					<input id="inputType_1" type="text"> <label
+						for="inputType_1">Type</label>
+				</div>
+				<div class="input-field col s1">
+					<input id="filter_1" type="text"> <label for="filter_1">Filter(Y|N)</label>
+				</div>
+				<div class="input-field col s1">
+					<input id="range1_1" type="text"> <label for="range1_1">range1</label>
+				</div>
+				<div class="input-field col s1">
+					<input id="range2_1" type="text"> <label for="range2_1">range2</label>
+				</div>
+				<div class="input-field col s1">
+					<input id="range3_1" type="text"> <label for="range3_1">range3</label>
+				</div>
+				<div class="input-field col s1">
+					<input id="range4_1" type="text"> <label for="range4_1">range4</label>
+				</div>
+				<div class="input-field col s1">
+					<input id="indexMe_1" type="text"> <label for="indexMe_1">Index(Y|N)</label>
+				</div>
+				<div class="input-field col s1">
+					<a class="btn waves-effect waves-light red lighten-2" href="#"
+						onclick="addRow();">Add Row</a>
+				</div>
+			</div>
+			<div id="replaceMe"></div>
+			<div class="row">
+				<div class="input-field col s2">
+					<a id="saveLink" class="btn waves-effect waves-light red lighten-2" href="#"
+						onclick="save();">Save</a>
+				</div>
+			</div>
+			<div class="row">
+				<div id="id01"></div>
+			</div>
+		</form>
+	</div>
+	<div id="progress" class="highest">
+	<div class="preloader-wrapper small active">
+    <div class="spinner-layer spinner-green-only">
+      <div class="circle-clipper left">
+        <div class="circle"></div>
+      </div><div class="gap-patch">
+        <div class="circle"></div>
+      </div><div class="circle-clipper right">
+        <div class="circle"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+	<script type="text/javascript" src="../js/materialize.js"></script>
+	<script>document.getElementById("progress").className="none";</script>
+
+</body>
+</html>

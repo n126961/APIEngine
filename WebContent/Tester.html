@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+
+
+</head>
+<body >
+<div id="id01"></div>
+Defaulted
+
+<script>
+
+//alert(1);
+	var xmlhttp = new XMLHttpRequest();
+	var url = "http://localhost:8080/APIEngine/search/q?term=keys&category=mob1&order=price&sort=asc&narrow=(brand:(Samsung%20OR%20Oppo))%20AND%20(screen_size:5.5%20OR%20screen_size:4.8)%20AND%20(price:[10000%20TO%2025000])";
+
+	xmlhttp.onreadystatechange = function() {
+	    if (this.readyState == 4 && this.status == 200) {
+	        var myArr = JSON.parse(this.responseText);
+	        displayParsedJson(myArr);
+	    }
+	};
+	xmlhttp.open("GET", url, true);
+	xmlhttp.send();
+
+function displayParsedJson(arr){
+	var out = "";
+    var i;
+    for(i = 0; i < arr.length; i++) {
+        out += arr[i];
+    }
+    document.getElementById("id01").innerHTML = out;
+}
+
+</script>
+
+</body>
+</html>
